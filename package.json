@@ -1,0 +1,22 @@
+{
+  "name": "earshot",
+  "version": "0.1.0",
+  "description": "Real-time Slack message events over your own session — no app, no polling.",
+  "type": "module",
+  "bin": {
+    "earshot": "./src/cli.ts"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test"
+  },
+  "keywords": ["slack", "websocket", "realtime", "xoxc", "no-app"],
+  "license": "MIT",
+  "author": "Nir Adler",
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "devDependencies": {
+    "bun-types": "^1.4.5"
+  }
+}
