@@ -6,9 +6,9 @@ Slack's official real-time options all need an installed app (Socket Mode / Even
 
 ```
 your Slack web session (xoxc + d cookie)
-        │  POST api.slack.com/api/rtm.connect
+        │  rtm.connect  (falls back to the web-client gateway if Slack refuses it)
         ▼
-   wss gateway url  ──── push ────▶  { channel, user, text, ts, … }
+   wss socket  ──── push ────▶  { channel, user, text, ts, … }
         (the same socket the browser uses)     the moment a message arrives
 ```
 
@@ -62,18 +62,40 @@ Each new message prints as one JSON line on stdout; status goes to stderr:
 
 Pipe it, or set `WEBHOOK_URL` in `.env` to POST every message as JSON to your own service (an agent trigger, a bot, a logger).
 
+| Variable | Default | |
+|---|---|---|
+| `SLACK_XOXC` / `SLACK_XOXD` | read from the desktop app (macOS) | your session |
+| `WEBHOOK_URL` | unset | POST each message as JSON; 10s timeout, 3 attempts with backoff on 5xx/429/network errors |
+| `WEBHOOK_HEADERS` | unset | JSON object of extra headers, e.g. `{"Authorization":"Bearer …"}` |
+| `EARSHOT_TRANSPORT` | `auto` | `auto`, `rtm` or `gateway` (see Transports) |
+
+Exit codes: `1` bad config or no session, `2` Slack rejected the session (logged out, revoked). Run it under a supervisor (launchd, systemd, pm2) so a restart re-reads a fresh session from the desktop app.
+
 ## As a library
 
 ```ts
-import { listen } from "earshot/src/gateway.ts";
+import { listen } from "earshot";
+import { resolveSession } from "earshot/session";
 
+const { token, cookie } = resolveSession();
 const gateway = listen({
-  token: process.env.SLACK_XOXC!,
-  cookie: process.env.SLACK_XOXD!,
+  token,
+  cookie,
   onMessage: (m) => console.log("new message", m),
-  onStatus: (s) => console.error(s),
+  onStatus: (status, detail) => {
+    if (status === "auth_failed") console.error("session expired", detail);
+  },
 });
 // gateway.stop() when done
+```
+
+Statuses: `connected` (detail: `rtm`, `gateway` or `reconnect_url`), `hello`, `rtm_unavailable`, `connect_failed`, `reconnecting`, `error`, and `auth_failed`, after which the listener stops for good.
+
+## Transports
+
+- **`rtm`** — `rtm.connect` with your session returns the socket URL. Slack's RTM deprecation covers apps; a browser session still gets a URL.
+- **`gateway`** — the web client's own socket (`wss-primary.slack.com`), keyed by your team id from `auth.test`. Works where `rtm.connect` is blocked.
+- **`auto`** (default) — `rtm`, and on any non-auth failure the gateway. Same frames on both.
 ```
 
 ## What you get
@@ -96,6 +118,7 @@ You cannot subscribe to activity outside your own membership — this is your se
 
 - **Unofficial.** This rides Slack's internal client transport. It can break if Slack changes it, and it is outside Slack's API terms of use.
 - **It is you.** Everything arrives under your identity and your access — treat the `d` cookie like a password.
+- **Messages sent while the socket reconnects are not replayed.** earshot is push-only; it does not backfill a gap with `conversations.history`.
 - **Not for production/compliance.** No audit trail, no admin visibility. Great for personal automation; a non-starter where you need either.
 
 ## License

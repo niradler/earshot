@@ -1,5 +1,5 @@
 import { createDecipheriv, pbkdf2Sync } from "node:crypto";
-import { copyFileSync, readdirSync, readFileSync } from "node:fs";
+import { copyFileSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { Database } from "bun:sqlite";
@@ -47,14 +47,22 @@ function readToken(dir: string): string {
 
 function readCookie(dir: string): string {
   const copy = join(tmpdir(), `earshot-cookies-${process.pid}-${Date.now()}`);
-  copyFileSync(join(dir, "Cookies"), copy);
-  const db = new Database(copy, { readonly: true });
-  const row = db
-    .query<{ encrypted_value: Uint8Array }, []>(
-      "SELECT encrypted_value FROM cookies WHERE name='d' AND host_key LIKE '%slack.com' LIMIT 1",
-    )
-    .get();
-  db.close();
+  let row: { encrypted_value: Uint8Array } | null;
+  try {
+    copyFileSync(join(dir, "Cookies"), copy);
+    const db = new Database(copy, { readonly: true });
+    try {
+      row = db
+        .query<{ encrypted_value: Uint8Array }, []>(
+          "SELECT encrypted_value FROM cookies WHERE name='d' AND host_key LIKE '%slack.com' LIMIT 1",
+        )
+        .get();
+    } finally {
+      db.close();
+    }
+  } finally {
+    rmSync(copy, { force: true });
+  }
   if (!row) throw new Error("no 'd' cookie in the Slack app");
   const keychain = Bun.spawnSync([
     "security",
