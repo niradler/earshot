@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { resolveSession } from "./extract.ts";
-import { listen } from "./gateway.ts";
+import { listen, type Transport } from "./gateway.ts";
+import { deliver, parseHeaders } from "./webhook.ts";
 
 let token: string;
 let cookie: string;
@@ -17,20 +18,36 @@ try {
   process.exit(1);
 }
 const webhook = process.env.WEBHOOK_URL;
+let headers: Record<string, string>;
+try {
+  headers = parseHeaders(process.env.WEBHOOK_HEADERS);
+} catch (error) {
+  console.error(`[earshot] ${error instanceof Error ? error.message : error}`);
+  process.exit(1);
+}
+const transport = (process.env.EARSHOT_TRANSPORT ?? "auto") as Transport;
+if (!["auto", "rtm", "gateway"].includes(transport)) {
+  console.error("[earshot] EARSHOT_TRANSPORT must be auto, rtm or gateway");
+  process.exit(1);
+}
 
 const gateway = listen({
   token,
   cookie,
-  onStatus: (status, detail) =>
-    console.error(`[earshot] ${status}${detail === undefined ? "" : ` ${JSON.stringify(detail)}`}`),
+  transport,
+  onStatus: (status, detail) => {
+    console.error(`[earshot] ${status}${detail === undefined ? "" : ` ${JSON.stringify(detail)}`}`);
+    if (status === "auth_failed") {
+      console.error("[earshot] session rejected; log in to Slack again, then restart");
+      process.exit(2);
+    }
+  },
   onMessage: (message) => {
     process.stdout.write(`${JSON.stringify(message)}\n`);
     if (webhook)
-      fetch(webhook, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(message),
-      }).catch((error) => console.error(`[earshot] webhook failed: ${error}`));
+      deliver(webhook, message, { headers }).catch((error) =>
+        console.error(`[earshot] ${error instanceof Error ? error.message : error}`),
+      );
   },
 });
 
