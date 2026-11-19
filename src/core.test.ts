@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { classify, toInbound } from "./core.ts";
+import { classify, toInbound } from "./core.js";
 
 test("classify keeps new human messages and drops acks, noise, edits and controls", () => {
   expect(classify({ type: "message", channel: "D1", user: "U1", text: "hi", ts: "1" })).toBe(

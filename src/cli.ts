@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
-import { resolveSession } from "./extract.ts";
-import { listen, type Transport } from "./gateway.ts";
-import { deliver, parseHeaders } from "./webhook.ts";
+import { resolveSession } from "./extract.js";
+import { listen, type Transport } from "./gateway.js";
+import { deliver, parseHeaders } from "./webhook.js";
 
 let token: string;
 let cookie: string;

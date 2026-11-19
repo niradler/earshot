@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { gatewayUrl, isAuthError, SlackApiError } from "./gateway.ts";
+import { gatewayUrl, isAuthError, SlackApiError } from "./gateway.js";
 
 test("gatewayUrl targets the web-client socket for the team, token url-encoded", () => {
   const url = new URL(gatewayUrl("xoxc-1/2+3", "T0ABC"));

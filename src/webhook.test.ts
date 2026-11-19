@@ -1,5 +1,5 @@
 import { afterAll, expect, test } from "bun:test";
-import { deliver, parseHeaders } from "./webhook.ts";
+import { deliver, parseHeaders } from "./webhook.js";
 
 const statuses: number[] = [];
 const seen: { auth: string | null; body: unknown }[] = [];

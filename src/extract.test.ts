@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { cleanCookie, pickXoxc } from "./extract.ts";
+import { cleanCookie, pickXoxc } from "./extract.js";
 
 test("pickXoxc returns the longest full token from noisy leveldb blobs", () => {
   expect(

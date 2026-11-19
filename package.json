@@ -1,24 +1,33 @@
 {
   "name": "@niradler55/earshot",
-  "version": "0.0.1",
-  "description": "Real-time Slack message events over your own session \u2014 no app, no polling.",
+  "version": "0.0.2",
+  "description": "Real-time Slack message events over your own session — no app, no polling.",
   "type": "module",
   "bin": {
-    "earshot": "./bin/earshot.js"
+    "earshot": "./dist/cli.js"
   },
   "exports": {
-    ".": "./src/gateway.ts",
-    "./session": "./src/extract.ts",
-    "./webhook": "./src/webhook.ts"
+    ".": {
+      "types": "./dist/gateway.d.ts",
+      "default": "./dist/gateway.js"
+    },
+    "./session": {
+      "types": "./dist/extract.d.ts",
+      "default": "./dist/extract.js"
+    },
+    "./webhook": {
+      "types": "./dist/webhook.d.ts",
+      "default": "./dist/webhook.js"
+    }
   },
   "files": [
-    "bin",
-    "src",
-    "!src/*.test.ts"
+    "dist"
   ],
   "scripts": {
     "start": "bun run src/cli.ts",
     "token": "bun run src/extract.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build && bun test",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },

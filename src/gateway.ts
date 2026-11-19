@@ -1,6 +1,6 @@
-import { classify, type InboundMessage, type SlackFrame, toInbound } from "./core.ts";
+import { classify, type InboundMessage, type SlackFrame, toInbound } from "./core.js";
 
-export type { InboundMessage } from "./core.ts";
+export type { InboundMessage } from "./core.js";
 
 const DEFAULT_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
