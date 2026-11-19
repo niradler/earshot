@@ -1,6 +1,6 @@
 {
   "name": "@niradler55/earshot",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Real-time Slack message events over your own session — no app, no polling.",
   "type": "module",
   "bin": {

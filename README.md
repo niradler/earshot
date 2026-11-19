@@ -41,19 +41,19 @@ bun install
 bun start
 ```
 
-On **macOS**, if `SLACK_XOXC` / `SLACK_XOXD` aren't set, earshot pulls them automatically from the installed **Slack desktop app** — the `xoxc` token from its Local Storage and the `d` cookie from its Cookies DB (decrypted with the "Slack Safe Storage" Keychain key; macOS may ask you to allow Keychain access once). No browser, no copy-paste.
+On **macOS** and **Windows**, if `SLACK_XOXC` / `SLACK_XOXD` aren't set, earshot pulls them automatically from the installed **Slack desktop app** — the `xoxc` token from its Local Storage and the `d` cookie from its Cookies DB. macOS decrypts with the "Slack Safe Storage" Keychain key (macOS may ask you to allow Keychain access once); Windows decrypts with the DPAPI-protected key from `Local State` (AES-256-GCM, current user). No browser, no copy-paste.
 
 Print the session for your shell or another tool:
 
 ```bash
 bun run token        # from source -> export SLACK_XOXC='…'  export SLACK_XOXD='…'
-bunx @niradler55/earshot token   # from the published package (macOS)
+bunx @niradler55/earshot token   # from the published package (macOS/Windows)
 eval "$(bun run token)"
 ```
 
 ## Get your session manually
 
-Not on macOS, or want to set it yourself? Both values live in your logged-in Slack **web** client (`app.slack.com`):
+Not on macOS/Windows, or want to set it yourself? Both values live in your logged-in Slack **web** client (`app.slack.com`):
 
 - **`SLACK_XOXC`** — DevTools → Console → `TS.boot_data.api_token` (starts `xoxc-`).
 - **`SLACK_XOXD`** — DevTools → Application → Cookies → the `d` cookie value (starts `xoxd-`). This is your session; treat it like a password.
@@ -72,7 +72,7 @@ Pipe it, or set `WEBHOOK_URL` in `.env` to POST every message as JSON to your ow
 
 | Variable | Default | |
 |---|---|---|
-| `SLACK_XOXC` / `SLACK_XOXD` | read from the desktop app (macOS) | your session |
+| `SLACK_XOXC` / `SLACK_XOXD` | read from the desktop app (macOS, Windows) | your session |
 | `WEBHOOK_URL` | unset | POST each message as JSON; 10s timeout, 3 attempts with backoff on 5xx/429/network errors |
 | `WEBHOOK_HEADERS` | unset | JSON object of extra headers, e.g. `{"Authorization":"Bearer …"}` |
 | `EARSHOT_TRANSPORT` | `auto` | `auto`, `rtm` or `gateway` (see Transports) |
