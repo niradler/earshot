@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "bun run src/cli.ts",
+    "token": "bun run src/extract.ts",
     "test": "bun test"
   },
   "keywords": ["slack", "websocket", "realtime", "xoxc", "no-app"],

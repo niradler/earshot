@@ -1,11 +1,18 @@
 #!/usr/bin/env bun
+import { resolveSession } from "./extract.ts";
 import { listen } from "./gateway.ts";
 
-const token = process.env.SLACK_XOXC;
-const cookie = process.env.SLACK_XOXD;
-if (!token || !cookie) {
+let token: string;
+let cookie: string;
+try {
+  const fromEnv = Boolean(process.env.SLACK_XOXC && process.env.SLACK_XOXD);
+  ({ token, cookie } = resolveSession());
+  if (!fromEnv) console.error("[earshot] loaded your session from the Slack desktop app");
+} catch (error) {
   console.error(
-    "earshot: set SLACK_XOXC (xoxc-… token) and SLACK_XOXD (the d cookie value). See the README.",
+    `[earshot] no SLACK_XOXC/SLACK_XOXD and could not read the Slack desktop app: ${
+      error instanceof Error ? error.message : error
+    }`,
   );
   process.exit(1);
 }

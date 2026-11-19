@@ -28,24 +28,30 @@ cd earshot
 bun install
 ```
 
-## Get your session
-
-Both values live in your logged-in Slack **web** client (`app.slack.com` in a browser):
-
-- **`SLACK_XOXC`** — open DevTools → Console on your Slack tab and run `TS.boot_data.api_token`. It starts with `xoxc-`.
-- **`SLACK_XOXD`** — DevTools → Application → Cookies → the `d` cookie value (starts with `xoxd-`). This is secret; it is your session.
-
-Put them in `.env` (git-ignored):
-
-```bash
-cp .env.example .env
-# edit .env with your two values
-```
-
 ## Run
 
 ```bash
 bun start
+```
+
+On **macOS**, if `SLACK_XOXC` / `SLACK_XOXD` aren't set, earshot pulls them automatically from the installed **Slack desktop app** — the `xoxc` token from its Local Storage and the `d` cookie from its Cookies DB (decrypted with the "Slack Safe Storage" Keychain key; macOS may ask you to allow Keychain access once). No browser, no copy-paste.
+
+Print the session for your shell or another tool:
+
+```bash
+bun run token        # -> export SLACK_XOXC='…'  export SLACK_XOXD='…'
+eval "$(bun run token)"
+```
+
+## Get your session manually
+
+Not on macOS, or want to set it yourself? Both values live in your logged-in Slack **web** client (`app.slack.com`):
+
+- **`SLACK_XOXC`** — DevTools → Console → `TS.boot_data.api_token` (starts `xoxc-`).
+- **`SLACK_XOXD`** — DevTools → Application → Cookies → the `d` cookie value (starts `xoxd-`). This is your session; treat it like a password.
+
+```bash
+cp .env.example .env   # then edit, or export the two vars
 ```
 
 Each new message prints as one JSON line on stdout; status goes to stderr:
@@ -73,6 +79,18 @@ const gateway = listen({
 ## What you get
 
 Only genuinely new, human messages are emitted. earshot drops your own send-acks (`reply_to`), edits and deletes (`message_changed` / `message_deleted`), and presence/typing noise. Control frames (`hello`, `reconnect_url`, `goodbye`, `error`) drive the connection and reconnect automatically.
+
+## What's on the stream
+
+The socket carries the **same event stream the Slack web client sees** — everything that happens in the channels and DMs you're a member of, in real time. earshot forwards new messages by default, but these event types are all on the wire (switch on `type` in `src/core.ts` to use more):
+
+- **Messages** — `message`, including DMs (`channel_type: "im"`), group DMs (`mpim`), channels and threads (`thread_ts`); subtypes like `file_share`, `message_changed`, `message_deleted`. Mentions are detected by scanning `text` for your user id (there is no separate app-mention event on a user session).
+- **Reactions** — `reaction_added`, `reaction_removed`.
+- **Channel / membership** — `channel_created`, `channel_joined`, `member_joined_channel`, `member_left_channel`, `im_created`.
+- **Pins / stars / files** — `pin_added`, `pin_removed`, `star_added`, `file_shared`, `file_created`.
+- **Presence / activity** — `user_typing`, `presence_change`, `dnd_updated` (earshot treats these as noise).
+
+You cannot subscribe to activity outside your own membership — this is your session, not an admin feed.
 
 ## Caveats — read these
 
