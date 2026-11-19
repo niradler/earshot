@@ -1,10 +1,10 @@
 {
-  "name": "earshot",
+  "name": "@niradler55/earshot",
   "version": "0.0.1",
   "description": "Real-time Slack message events over your own session \u2014 no app, no polling.",
   "type": "module",
   "bin": {
-    "earshot": "./src/cli.ts"
+    "earshot": "./bin/earshot.js"
   },
   "exports": {
     ".": "./src/gateway.ts",
@@ -12,6 +12,7 @@
     "./webhook": "./src/webhook.ts"
   },
   "files": [
+    "bin",
     "src",
     "!src/*.test.ts"
   ],

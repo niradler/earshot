@@ -23,6 +23,13 @@ your Slack web session (xoxc + d cookie)
 Requires [Bun](https://bun.sh).
 
 ```bash
+bun add @niradler55/earshot   # as a library
+bunx @niradler55/earshot      # run the CLI directly
+```
+
+Or from source:
+
+```bash
 git clone https://github.com/niradler/earshot
 cd earshot
 bun install
@@ -74,8 +81,8 @@ Exit codes: `1` bad config or no session, `2` Slack rejected the session (logged
 ## As a library
 
 ```ts
-import { listen } from "earshot";
-import { resolveSession } from "earshot/session";
+import { listen } from "@niradler55/earshot";
+import { resolveSession } from "@niradler55/earshot/session";
 
 const { token, cookie } = resolveSession();
 const gateway = listen({
