@@ -3,6 +3,17 @@ import { resolveSession } from "./extract.js";
 import { listen, type Transport } from "./gateway.js";
 import { deliver, parseHeaders } from "./webhook.js";
 
+if (process.argv[2] === "token") {
+  const { printSession } = await import("./extract.js");
+  try {
+    printSession();
+  } catch (error) {
+    console.error(`[earshot] ${error instanceof Error ? error.message : error}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 let token: string;
 let cookie: string;
 try {

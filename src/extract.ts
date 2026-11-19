@@ -97,7 +97,9 @@ export function resolveSession(): Session {
   return { token: token || fromApp.token, cookie: cookie || fromApp.cookie };
 }
 
-if (import.meta.main) {
+export function printSession(): void {
   const { token, cookie } = extractFromDesktop();
   process.stdout.write(`export SLACK_XOXC='${token}'\nexport SLACK_XOXD='${cookie}'\n`);
 }
+
+if (import.meta.main) printSession();

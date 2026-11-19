@@ -46,7 +46,8 @@ On **macOS**, if `SLACK_XOXC` / `SLACK_XOXD` aren't set, earshot pulls them auto
 Print the session for your shell or another tool:
 
 ```bash
-bun run token        # -> export SLACK_XOXC='…'  export SLACK_XOXD='…'
+bun run token        # from source -> export SLACK_XOXC='…'  export SLACK_XOXD='…'
+bunx @niradler55/earshot token   # from the published package (macOS)
 eval "$(bun run token)"
 ```
 
